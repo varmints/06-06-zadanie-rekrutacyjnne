@@ -1,15 +1,4 @@
 <p-card>
-  <ng-template pTemplate="title"> Items List </ng-template>
-  <ng-template pTemplate="header">
-    <div class="table-header">
-      <p-iconfield>
-        <p-inputicon styleClass="pi pi-search" />
-        <input pInputText type="text" (input)="onSearch($event)" placeholder="Search..." [(ngModel)]="searchTerm" />
-      </p-iconfield>
-      <p-button icon="pi pi-times" label="Clear" (click)="clearSearch()" severity="danger" />
-    </div>
-  </ng-template>
-
   <p-table
     #dt
     [value]="items"
@@ -25,6 +14,18 @@
     responsiveLayout="scroll"
     styleClass="p-datatable-gridlines"
   >
+    <ng-template #caption>
+      <div class="flex items-center justify-between">
+        <span class="text-xl font-bold">Items List</span>
+        <div class="flex items-center gap-2">
+          <p-iconfield>
+            <p-inputicon styleClass="pi pi-search" />
+            <input pInputText type="text" (input)="onSearch($event)" placeholder="Search..." [(ngModel)]="searchTerm" />
+          </p-iconfield>
+          <p-button icon="pi pi-times" label="Clear" (click)="clearSearch()" severity="danger" />
+        </div>
+      </div>
+    </ng-template>
     <ng-template pTemplate="header" let-columns>
       <tr>
         <th *ngFor="let col of columns" [pSortableColumn]="col.field">
