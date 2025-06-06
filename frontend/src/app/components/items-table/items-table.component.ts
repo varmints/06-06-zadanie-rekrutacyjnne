@@ -42,7 +42,6 @@ export class ItemsTableComponent implements OnInit {
   loading: boolean = true; // Changed to true
   rows: number = 10; // Default rows per page
   searchTerm: string = '';
-  skeletonRows: number[] = []; // Added for skeleton loader
 
   private readonly MAX_TEXT_LENGTH = 50; // Maximum characters to display in a cell
 
@@ -50,7 +49,6 @@ export class ItemsTableComponent implements OnInit {
     private itemsService: ItemsService,
     private messageService: MessageService // Injected MessageService
   ) {
-    this.skeletonRows = Array(this.rows).fill(0); // Initialize skeletonRows
     this.items = Array(this.rows).fill({}); // Force skeleton rows on first load
   }
 
@@ -74,7 +72,6 @@ export class ItemsTableComponent implements OnInit {
     this.loading = true;
     const page = event.first !== undefined && event.rows ? event.first / event.rows : 0;
     const limit = event.rows || this.rows;
-    this.skeletonRows = Array(limit).fill(0); // Update skeletonRows based on current limit
     this.items = Array(limit).fill({}); // Force skeleton rows while loading
     const sortField = (event.sortField as string) || 'id';
     const sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
