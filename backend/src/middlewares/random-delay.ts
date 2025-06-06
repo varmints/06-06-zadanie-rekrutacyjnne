@@ -9,8 +9,8 @@ export function randomDelayMiddleware(
   res: Response,
   next: NextFunction
 ): void {
-  const min = 200; // ms
-  const max = 1000; // ms
+  const min = 9000; // ms
+  const max = 10000; // ms
   const delay = Math.floor(Math.random() * (max - min + 1)) + min;
   setTimeout(next, delay);
 }
