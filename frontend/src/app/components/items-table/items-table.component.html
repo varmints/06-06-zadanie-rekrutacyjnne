@@ -47,9 +47,15 @@
             <p-skeleton height="1.375rem"></p-skeleton>
           </ng-container>
           <ng-template #dataCell>
-            <span [class.truncate-text]="shouldShowTooltip(rowData[col.field])">
-              {{ truncateText(rowData[col.field]) }}
-            </span>
+            <ng-container *ngIf="{ showTooltip: shouldShowTooltip(rowData[col.field]) } as tooltipState">
+              <span
+                [class.truncate-text]="tooltipState.showTooltip"
+                [pTooltip]="tooltipState.showTooltip ? rowData[col.field] : null"
+                tooltipPosition="top"
+              >
+                {{ truncateText(rowData[col.field]) }}
+              </span>
+            </ng-container>
           </ng-template>
         </td>
       </tr>

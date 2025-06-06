@@ -43,7 +43,7 @@ export class ItemsTableComponent implements OnInit {
   rows: number = 10; // Default rows per page
   searchTerm: string = '';
 
-  private readonly MAX_TEXT_LENGTH = 50; // Maximum characters to display in a cell
+  private readonly MAX_TEXT_LENGTH = 20; // Maximum characters to display in a cell
 
   constructor(
     private itemsService: ItemsService,
@@ -136,14 +136,16 @@ export class ItemsTableComponent implements OnInit {
     return 1; // Default to ascending
   }
 
-  truncateText(text: any): string {
-    if (typeof text === 'string' && text.length > this.MAX_TEXT_LENGTH) {
-      return text.substring(0, this.MAX_TEXT_LENGTH) + '...';
+  truncateText(text: string | number | null | undefined): string {
+    const textAsString = String(text ?? ''); // Convert to string, handling null/undefined
+    if (textAsString.length > this.MAX_TEXT_LENGTH) {
+      return textAsString.substring(0, this.MAX_TEXT_LENGTH) + '...';
     }
-    return text;
+    return textAsString;
   }
 
-  shouldShowTooltip(text: any): boolean {
-    return typeof text === 'string' && text.length > this.MAX_TEXT_LENGTH;
+  shouldShowTooltip(text: string | number | null | undefined): boolean {
+    const textAsString = String(text ?? ''); // Convert to string, handling null/undefined
+    return textAsString.length > this.MAX_TEXT_LENGTH;
   }
 }
