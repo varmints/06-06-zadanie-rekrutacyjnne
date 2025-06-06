@@ -45,6 +45,7 @@ export class ItemsTableComponent implements OnInit {
 
   constructor(private itemsService: ItemsService) {
     this.skeletonRows = Array(this.rows).fill(0); // Initialize skeletonRows
+    this.items = Array(this.rows).fill({}); // Force skeleton rows on first load
   }
 
   ngOnInit(): void {
@@ -54,7 +55,13 @@ export class ItemsTableComponent implements OnInit {
       { field: 'category', header: 'Category' },
       { field: 'date', header: 'Date' },
     ];
-    // Initial load is handled by onLazyLoad event of the table
+    // Initial load: trigger skeleton and data fetch
+    this.loadItems({
+      first: 0,
+      rows: this.rows,
+      sortField: this.getCurrentSortField(),
+      sortOrder: this.getCurrentSortOrder(),
+    });
   }
 
   loadItems(event: TableLazyLoadEvent): void {
@@ -62,6 +69,7 @@ export class ItemsTableComponent implements OnInit {
     const page = event.first !== undefined && event.rows ? event.first / event.rows : 0;
     const limit = event.rows || this.rows;
     this.skeletonRows = Array(limit).fill(0); // Update skeletonRows based on current limit
+    this.items = Array(limit).fill({}); // Force skeleton rows while loading
     const sortField = (event.sortField as string) || 'id';
     const sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
 

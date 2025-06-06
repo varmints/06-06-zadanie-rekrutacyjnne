@@ -41,24 +41,18 @@
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-rowData let-columns="columns">
-      <tr *ngIf="!loading">
-        <td
-          *ngFor="let col of columns"
-          [pTooltip]="shouldShowTooltip(rowData[col.field]) ? rowData[col.field] : null"
-          tooltipPosition="top"
-        >
-          <span [class.truncate-text]="shouldShowTooltip(rowData[col.field])">
-            {{ truncateText(rowData[col.field]) }}
-          </span>
+      <tr>
+        <td *ngFor="let col of columns">
+          <ng-container *ngIf="loading; else dataCell">
+            <p-skeleton height="1.375rem"></p-skeleton>
+          </ng-container>
+          <ng-template #dataCell>
+            <span [class.truncate-text]="shouldShowTooltip(rowData[col.field])">
+              {{ truncateText(rowData[col.field]) }}
+            </span>
+          </ng-template>
         </td>
       </tr>
-      <ng-container *ngIf="loading">
-        <tr>
-          <td *ngFor="let col of columns">
-            <p-skeleton height="1.375rem"></p-skeleton>
-          </td>
-        </tr>
-      </ng-container>
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
