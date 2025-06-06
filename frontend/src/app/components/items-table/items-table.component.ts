@@ -6,8 +6,10 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { SkeletonModule } from 'primeng/skeleton'; // Added SkeletonModule
-import { MessageService } from 'primeng/api'; // Added MessageService
+import { SkeletonModule } from 'primeng/skeleton';
+import { MessageService } from 'primeng/api';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { Item } from '../../models/item.model';
 import { ItemsService } from '../../services/items.service';
 import { GetItemsResponse } from '../../models/get-items-response.model';
@@ -28,7 +30,9 @@ interface Column {
     InputTextModule,
     ButtonModule,
     TooltipModule,
-    SkeletonModule, // Added SkeletonModule
+    SkeletonModule,
+    IconFieldModule,
+    InputIconModule,
   ],
   templateUrl: './items-table.component.html',
   styleUrls: ['./items-table.component.css'],

@@ -2,18 +2,11 @@
   <ng-template pTemplate="title"> Items List </ng-template>
   <ng-template pTemplate="header">
     <div class="table-header">
-      <span class="p-input-icon-left">
-        <i class="pi pi-search"></i>
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-search" />
         <input pInputText type="text" (input)="onSearch($event)" placeholder="Search..." [(ngModel)]="searchTerm" />
-      </span>
-      <button
-        pButton
-        type="button"
-        icon="pi pi-times"
-        label="Clear"
-        (click)="clearSearch()"
-        class="p-button-outlined"
-      ></button>
+      </p-iconfield>
+      <p-button icon="pi pi-times" label="Clear" (click)="clearSearch()" severity="danger" />
     </div>
   </ng-template>
 

@@ -10,7 +10,7 @@ export function randomDelayMiddleware(
   next: NextFunction
 ): void {
   const min = 500; // ms
-  const max = 3000; // ms
+  const max = 1500; // ms
   const delay = Math.floor(Math.random() * (max - min + 1)) + min;
   setTimeout(next, delay);
 }
