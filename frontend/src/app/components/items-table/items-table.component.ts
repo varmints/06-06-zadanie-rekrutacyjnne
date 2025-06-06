@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core'; // Added ViewChild
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TableModule, TableLazyLoadEvent } from 'primeng/table';
+import { TableModule, TableLazyLoadEvent, Table } from 'primeng/table'; // Added Table
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -33,6 +33,8 @@ interface Column {
   styleUrls: ['./items-table.component.css'],
 })
 export class ItemsTableComponent implements OnInit {
+  @ViewChild('dt') dt!: Table; // Added ViewChild reference to the table
+
   items: Item[] = [];
   cols: Column[] = [];
   totalRecords: number = 0;
@@ -99,10 +101,10 @@ export class ItemsTableComponent implements OnInit {
     const inputElement = event.target as HTMLInputElement;
     this.searchTerm = inputElement.value;
     const lazyLoadEvent: TableLazyLoadEvent = {
-      first: 0,
-      rows: this.rows,
-      sortField: this.getCurrentSortField(),
-      sortOrder: this.getCurrentSortOrder(),
+      first: 0, // Reset to first page
+      rows: this.dt ? this.dt.rows : this.rows,
+      sortField: this.dt && this.dt.sortField ? this.dt.sortField : this.getCurrentSortField(),
+      sortOrder: this.dt && this.dt.sortOrder ? this.dt.sortOrder : this.getCurrentSortOrder(),
     };
     this.loadItems(lazyLoadEvent);
   }
@@ -110,10 +112,10 @@ export class ItemsTableComponent implements OnInit {
   clearSearch(): void {
     this.searchTerm = '';
     const lazyLoadEvent: TableLazyLoadEvent = {
-      first: 0,
-      rows: this.rows,
-      sortField: this.getCurrentSortField(),
-      sortOrder: this.getCurrentSortOrder(),
+      first: 0, // Reset to first page
+      rows: this.dt ? this.dt.rows : this.rows,
+      sortField: this.dt && this.dt.sortField ? this.dt.sortField : this.getCurrentSortField(),
+      sortOrder: this.dt && this.dt.sortOrder ? this.dt.sortOrder : this.getCurrentSortOrder(),
     };
     this.loadItems(lazyLoadEvent);
   }
