@@ -41,7 +41,7 @@
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-rowData let-columns="columns">
-      <tr>
+      <tr *ngIf="!loading">
         <td
           *ngFor="let col of columns"
           [pTooltip]="shouldShowTooltip(rowData[col.field]) ? rowData[col.field] : null"
@@ -52,6 +52,13 @@
           </span>
         </td>
       </tr>
+      <ng-container *ngIf="loading">
+        <tr>
+          <td *ngFor="let col of columns">
+            <p-skeleton height="1.375rem"></p-skeleton>
+          </td>
+        </tr>
+      </ng-container>
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
