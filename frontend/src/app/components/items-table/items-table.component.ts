@@ -75,15 +75,15 @@ export class ItemsTableComponent implements OnInit {
   loadItems(event: TableLazyLoadEvent): void {
     this.loading = true;
     const page = event.first !== undefined && event.rows ? event.first / event.rows : 0;
-    const limit = event.rows || this.rows;
-    this.items = Array(limit).fill({}); // Force skeleton rows while loading
+    const pageSize = event.rows || this.rows;
+    this.items = Array(pageSize).fill({}); // Force skeleton rows while loading
     const sortField = (event.sortField as string) || 'id';
     const sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
 
     this.itemsService
       .getItems({
         page: page + 1, // API is 1-based
-        limit,
+        pageSize,
         sortField,
         sortOrder,
         search: this.searchTerm,
