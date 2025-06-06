@@ -1,7 +1,36 @@
-<main class="main">
-  <div class="content">
-    <app-items-table></app-items-table>
+<div class="flex h-screen">
+  <!-- Sidebar -->
+  <div class="w-64 shadow-md">
+    <div class="p-4">
+      <h1 class="text-2xl font-bold">Admin Panel</h1>
+    </div>
+    <p-menu [model]="menuItems" styleClass="w-full"></p-menu>
   </div>
-</main>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <header class="shadow-sm p-4">
+      <div class="flex items-center justify-end">
+        <div>
+          <!-- Placeholder for user profile or actions -->
+          <button
+            pButton
+            type="button"
+            icon="pi pi-user"
+            class="p-button-rounded p-button-secondary p-button-text"
+          ></button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto p-4">
+      <div class="container mx-auto px-6 py-8">
+        <app-items-table></app-items-table>
+      </div>
+    </main>
+  </div>
+</div>
 
 <router-outlet />

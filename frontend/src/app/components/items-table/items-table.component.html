@@ -38,7 +38,7 @@
       <tr>
         <td *ngFor="let col of columns">
           <ng-container *ngIf="loading; else dataCell">
-            <p-skeleton height="1.375rem"></p-skeleton>
+            <p-skeleton height="1.5rem"></p-skeleton>
           </ng-container>
           <ng-template #dataCell>
             <ng-container *ngIf="{ showTooltip: shouldShowTooltip(rowData[col.field]) } as tooltipState">
