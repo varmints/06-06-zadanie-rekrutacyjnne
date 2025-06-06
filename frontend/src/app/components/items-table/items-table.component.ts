@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core'; // Added ViewChild
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core'; // Added OnDestroy
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule, TableLazyLoadEvent, Table } from 'primeng/table'; // Added Table
@@ -13,6 +13,8 @@ import { InputIconModule } from 'primeng/inputicon';
 import { Item } from '../../models/item.model';
 import { ItemsService } from '../../services/items.service';
 import { GetItemsResponse } from '../../models/get-items-response.model';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 interface Column {
   field: string;
@@ -37,7 +39,8 @@ interface Column {
   templateUrl: './items-table.component.html',
   styleUrls: ['./items-table.component.css'],
 })
-export class ItemsTableComponent implements OnInit {
+export class ItemsTableComponent implements OnInit, OnDestroy {
+  // Implemented OnDestroy
   @ViewChild('dt') dt!: Table; // Added ViewChild reference to the table
 
   items: Item[] = [];
@@ -48,6 +51,8 @@ export class ItemsTableComponent implements OnInit {
   searchTerm: string = '';
 
   private readonly MAX_TEXT_LENGTH = 20; // Maximum characters to display in a cell
+  private searchSubject = new Subject<string>();
+  private searchSubscription!: Subscription;
 
   constructor(
     private itemsService: ItemsService,
@@ -63,13 +68,30 @@ export class ItemsTableComponent implements OnInit {
       { field: 'category', header: 'Category' },
       { field: 'date', header: 'Date' },
     ];
-    // Initial load: trigger skeleton and data fetch
     this.loadItems({
       first: 0,
       rows: this.rows,
       sortField: this.getCurrentSortField(),
       sortOrder: this.getCurrentSortOrder(),
     });
+
+    this.searchSubscription = this.searchSubject
+      .pipe(debounceTime(500)) // Debounce for 500ms
+      .subscribe(() => {
+        const lazyLoadEvent: TableLazyLoadEvent = {
+          first: 0, // Reset to first page
+          rows: this.dt ? this.dt.rows : this.rows,
+          sortField: this.dt?.sortField ?? this.getCurrentSortField(),
+          sortOrder: this.dt?.sortOrder ?? this.getCurrentSortOrder(),
+        };
+        this.loadItems(lazyLoadEvent);
+      });
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
   }
 
   loadItems(event: TableLazyLoadEvent): void {
@@ -112,24 +134,12 @@ export class ItemsTableComponent implements OnInit {
   onSearch(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
     this.searchTerm = inputElement.value;
-    const lazyLoadEvent: TableLazyLoadEvent = {
-      first: 0, // Reset to first page
-      rows: this.dt ? this.dt.rows : this.rows,
-      sortField: this.dt && this.dt.sortField ? this.dt.sortField : this.getCurrentSortField(),
-      sortOrder: this.dt && this.dt.sortOrder ? this.dt.sortOrder : this.getCurrentSortOrder(),
-    };
-    this.loadItems(lazyLoadEvent);
+    this.searchSubject.next(this.searchTerm); // Use subject to trigger search
   }
 
   clearSearch(): void {
     this.searchTerm = '';
-    const lazyLoadEvent: TableLazyLoadEvent = {
-      first: 0, // Reset to first page
-      rows: this.dt ? this.dt.rows : this.rows,
-      sortField: this.dt && this.dt.sortField ? this.dt.sortField : this.getCurrentSortField(),
-      sortOrder: this.dt && this.dt.sortOrder ? this.dt.sortOrder : this.getCurrentSortOrder(),
-    };
-    this.loadItems(lazyLoadEvent);
+    this.searchSubject.next(''); // Trigger debounced search with empty term
   }
 
   private getCurrentSortField(): string {

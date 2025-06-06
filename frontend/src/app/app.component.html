@@ -10,16 +10,11 @@
   <!-- Main Content -->
   <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Header -->
-    <header class="shadow-sm p-4">
+    <header class="shadow-sm p-4 bg-surface-900">
       <div class="flex items-center justify-end">
         <div>
           <!-- Placeholder for user profile or actions -->
-          <button
-            pButton
-            type="button"
-            icon="pi pi-user"
-            class="p-button-rounded p-button-secondary p-button-text"
-          ></button>
+          <p-button icon="pi pi-user" [rounded]="true" severity="secondary" />
         </div>
       </div>
     </header>
