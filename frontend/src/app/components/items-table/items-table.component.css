@@ -1,0 +1,39 @@
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem; /* Add some space below the header */
+}
+
+.table-header .p-input-icon-left {
+  margin-right: 1rem; /* Add some space between search and clear button */
+}
+
+/* Style for truncating text and adding ellipsis */
+.truncate-text {
+  display: inline-block;
+  max-width: 150px; /* Adjust as needed, should be less than cell width */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle; /* Aligns text nicely if icons or other elements are in the cell */
+}
+
+/* Ensure PrimeNG table styles don't get overridden in a way that breaks layout */
+:host ::ng-deep .p-datatable-gridlines .p-datatable-tbody > tr > td {
+  word-break: break-word; /* Helps with long words if not truncated */
+}
+
+/* Ensure the card has some padding */
+:host ::ng-deep .p-card .p-card-body {
+  padding: 1rem;
+}
+
+:host ::ng-deep .p-card .p-card-content {
+  padding-top: 0;
+}
+
+/* Adjust pagination alignment if needed */
+:host ::ng-deep .p-paginator {
+  justify-content: flex-end;
+}

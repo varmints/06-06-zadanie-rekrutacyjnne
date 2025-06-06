@@ -1,0 +1,62 @@
+<p-card>
+  <ng-template pTemplate="title"> Items List </ng-template>
+  <ng-template pTemplate="header">
+    <div class="table-header">
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" (input)="onSearch($event)" placeholder="Search..." [(ngModel)]="searchTerm" />
+      </span>
+      <button
+        pButton
+        type="button"
+        icon="pi pi-times"
+        label="Clear"
+        (click)="clearSearch()"
+        class="p-button-outlined"
+      ></button>
+    </div>
+  </ng-template>
+
+  <p-table
+    #dt
+    [value]="items"
+    [columns]="cols"
+    [lazy]="true"
+    (onLazyLoad)="loadItems($event)"
+    [paginator]="true"
+    [rows]="rows"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    dataKey="id"
+    responsiveLayout="scroll"
+    styleClass="p-datatable-gridlines"
+  >
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        <th *ngFor="let col of columns" [pSortableColumn]="col.field">
+          {{ col.header }}
+          <p-sortIcon [field]="col.field"></p-sortIcon>
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-rowData let-columns="columns">
+      <tr>
+        <td
+          *ngFor="let col of columns"
+          [pTooltip]="shouldShowTooltip(rowData[col.field]) ? rowData[col.field] : null"
+          tooltipPosition="top"
+        >
+          <span [class.truncate-text]="shouldShowTooltip(rowData[col.field])">
+            {{ truncateText(rowData[col.field]) }}
+          </span>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td [attr.colspan]="cols ? cols.length : 1">No items found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
