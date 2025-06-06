@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton'; // Added SkeletonModule
+import { MessageService } from 'primeng/api'; // Added MessageService
 import { Item } from '../../models/item.model';
 import { ItemsService } from '../../services/items.service';
 import { GetItemsResponse } from '../../models/get-items-response.model';
@@ -45,7 +46,10 @@ export class ItemsTableComponent implements OnInit {
 
   private readonly MAX_TEXT_LENGTH = 50; // Maximum characters to display in a cell
 
-  constructor(private itemsService: ItemsService) {
+  constructor(
+    private itemsService: ItemsService,
+    private messageService: MessageService // Injected MessageService
+  ) {
     this.skeletonRows = Array(this.rows).fill(0); // Initialize skeletonRows
     this.items = Array(this.rows).fill({}); // Force skeleton rows on first load
   }
@@ -91,8 +95,15 @@ export class ItemsTableComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error fetching items:', error);
+          this.items = []; // Clear items on error
+          this.totalRecords = 0;
           this.loading = false;
-          // Handle error appropriately in a real application
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error Loading Data',
+            detail: 'Could not load items. Please try again later.',
+            life: 3000,
+          });
         },
       });
   }
