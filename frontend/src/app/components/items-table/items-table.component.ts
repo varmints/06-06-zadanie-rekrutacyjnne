@@ -17,6 +17,7 @@ import { ItemsState } from '../../store/items/items.state';
 import * as ItemsActions from '../../store/items/items.actions';
 import * as ItemsSelectors from '../../store/items/items.selectors';
 import { TooltipService } from '../../services/tooltip.service';
+import { ItemsTableSearchComponent } from './items-table-search/items-table-search.component';
 
 interface Column {
   field: string;
@@ -37,6 +38,7 @@ interface Column {
     SkeletonModule,
     IconFieldModule,
     InputIconModule,
+    ItemsTableSearchComponent, // Add ItemsTableSearchComponent to imports
   ],
   templateUrl: './items-table.component.html',
   styleUrls: ['./items-table.component.css'],
@@ -115,9 +117,7 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
     this.store.dispatch(ItemsActions.updateSort({ sortField, sortOrder }));
   }
 
-  onSearch(event: Event): void {
-    const inputElement = event.target as HTMLInputElement;
-    const term = inputElement.value;
+  onSearch(term: string): void {
     this.searchSubject.next(term);
   }
 
