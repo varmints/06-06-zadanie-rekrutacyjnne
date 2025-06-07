@@ -53,6 +53,7 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
   private readonly MAX_TEXT_LENGTH = 20; // Maximum characters to display in a cell
   private searchSubject = new Subject<string>();
   private searchSubscription!: Subscription;
+  private readonly LOCAL_STORAGE_ROWS_KEY = 'itemsTableRowsPerPage'; // Added for local storage
 
   constructor(
     private itemsService: ItemsService,
@@ -62,6 +63,14 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const storedRows = localStorage.getItem(this.LOCAL_STORAGE_ROWS_KEY);
+    if (storedRows) {
+      const parsedRows = parseInt(storedRows, 10);
+      if (!isNaN(parsedRows) && parsedRows > 0) {
+        this.rows = parsedRows;
+      }
+    }
+
     this.cols = [
       { field: 'id', header: 'ID' },
       { field: 'name', header: 'Name' },
@@ -70,7 +79,7 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
     ];
     this.loadItems({
       first: 0,
-      rows: this.rows,
+      rows: this.rows, // Use the initialized this.rows
       sortField: this.getCurrentSortField(),
       sortOrder: this.getCurrentSortOrder(),
     });
@@ -96,8 +105,18 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
 
   loadItems(event: TableLazyLoadEvent): void {
     this.loading = true;
-    const page = event.first !== undefined && event.rows ? event.first / event.rows : 0;
-    const pageSize = event.rows || this.rows;
+
+    // If event.rows is provided (e.g., from paginator change),
+    // update this.rows and save to localStorage.
+    if (typeof event.rows === 'number' && event.rows > 0) {
+      this.rows = event.rows;
+      localStorage.setItem(this.LOCAL_STORAGE_ROWS_KEY, this.rows.toString());
+    }
+    // this.rows now holds the correct value (from event, or from previous state/localStorage)
+
+    const page = event.first !== undefined && this.rows > 0 ? event.first / this.rows : 0;
+    const pageSize = this.rows; // pageSize is now consistently this.rows
+
     this.items = Array(pageSize).fill({}); // Force skeleton rows while loading
     const sortField = (event.sortField as string) || 'id';
     const sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
