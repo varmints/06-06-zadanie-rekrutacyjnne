@@ -1,7 +1,7 @@
 <p-card>
   <p-table
     #dt
-    [value]="(items$ | async) ?? []"
+    [value]="(loading$ | async) ? skeletonRows : ((items$ | async) ?? [])"
     [columns]="cols"
     [lazy]="true"
     (onLazyLoad)="loadItems($event)"

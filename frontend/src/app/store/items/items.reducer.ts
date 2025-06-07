@@ -14,10 +14,10 @@ export const itemsReducer = createReducer(
     sortOrder: sortOrder !== undefined ? sortOrder : state.sortOrder,
     searchTerm: searchTerm !== undefined ? searchTerm : state.searchTerm,
   })),
-  on(ItemsActions.loadItemsSuccess, (state, { response }) => ({
+  on(ItemsActions.loadItemsSuccess, (state, { items, totalRecords }) => ({
     ...state,
-    items: response.data,
-    totalItems: response.total,
+    items,
+    totalItems: totalRecords,
     loading: false,
     error: null,
   })),

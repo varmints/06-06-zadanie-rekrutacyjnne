@@ -53,7 +53,12 @@ export class ItemsEffects {
               search: currentSearchTerm,
             })
             .pipe(
-              map((response) => ItemsActions.loadItemsSuccess({ response })),
+              map((response) =>
+                ItemsActions.loadItemsSuccess({
+                  items: response.data,
+                  totalRecords: response.total,
+                })
+              ),
               catchError((error) => of(ItemsActions.loadItemsFailure({ error })))
             );
         })

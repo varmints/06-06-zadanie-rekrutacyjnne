@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { GetItemsResponse } from '../../models/get-items-response.model';
+import { Item } from '../../models/item.model';
 
 export const loadItems = createAction(
   '[Items Table] Load Items',
@@ -12,7 +12,10 @@ export const loadItems = createAction(
   }>()
 );
 
-export const loadItemsSuccess = createAction('[Items API] Load Items Success', props<{ response: GetItemsResponse }>());
+export const loadItemsSuccess = createAction(
+  '[Items API] Load Items Success',
+  props<{ items: Item[]; totalRecords: number }>()
+);
 
 export const loadItemsFailure = createAction('[Items API] Load Items Failure', props<{ error: any }>());
 

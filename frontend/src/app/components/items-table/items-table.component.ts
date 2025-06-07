@@ -55,6 +55,7 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
   private readonly LOCAL_STORAGE_ROWS_KEY = 'itemsTableRowsPerPage';
+  skeletonRows: any[] = [];
 
   constructor(private store: Store<{ items: ItemsState }>) {
     this.items$ = this.store.pipe(select(ItemsSelectors.selectAllItems));
@@ -80,7 +81,7 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
       { field: 'date', header: 'Date' },
     ];
 
-    this.store.dispatch(ItemsActions.loadItems({ pageSize: this.rows, page: 0 }));
+    this.skeletonRows = Array(this.rows).fill({});
 
     this.searchSubject.pipe(debounceTime(500), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe((term) => {
       this.store.dispatch(ItemsActions.updateSearchTerm({ searchTerm: term }));
@@ -89,6 +90,7 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
     this.store.pipe(select(ItemsSelectors.selectPagination), takeUntil(this.destroy$)).subscribe((pagination) => {
       if (pagination && pagination.pageSize !== this.rows) {
         this.rows = pagination.pageSize;
+        this.skeletonRows = Array(this.rows).fill({});
       }
     });
   }
