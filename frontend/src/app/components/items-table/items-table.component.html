@@ -43,20 +43,19 @@
     <ng-template pTemplate="body" let-rowData let-columns="columns">
       <tr>
         <td *ngFor="let col of columns">
-          <ng-container *ngIf="loading$ | async; else dataCell">
+          @if (loading$ | async) {
             <p-skeleton height="1.5rem"></p-skeleton>
-          </ng-container>
-          <ng-template #dataCell>
-            <ng-container *ngIf="{ showTooltip: shouldShowTooltip(rowData[col.field]) } as tooltipState">
-              <span
-                [class.truncate-text]="tooltipState.showTooltip"
-                [pTooltip]="tooltipState.showTooltip ? rowData[col.field] : null"
-                tooltipPosition="top"
-              >
+          } @else {
+            @if (shouldShowTooltip(rowData[col.field])) {
+              <span class="truncate-text" [pTooltip]="rowData[col.field]" tooltipPosition="top">
                 {{ truncateText(rowData[col.field]) }}
               </span>
-            </ng-container>
-          </ng-template>
+            } @else {
+              <span>
+                {{ truncateText(rowData[col.field]) }}
+              </span>
+            }
+          }
         </td>
       </tr>
     </ng-template>
