@@ -16,6 +16,7 @@ import { Store, select } from '@ngrx/store';
 import { ItemsState } from '../../store/items/items.state';
 import * as ItemsActions from '../../store/items/items.actions';
 import * as ItemsSelectors from '../../store/items/items.selectors';
+import { TooltipService } from '../../services/tooltip.service';
 
 interface Column {
   field: string;
@@ -51,13 +52,16 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
   cols: Column[] = [];
   rows: number = 10;
 
-  private readonly MAX_TEXT_LENGTH = 20;
+  readonly MAX_TEXT_LENGTH = 30;
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
   private readonly LOCAL_STORAGE_ROWS_KEY = 'itemsTableRowsPerPage';
   skeletonRows: any[] = [];
 
-  constructor(private store: Store<{ items: ItemsState }>) {
+  constructor(
+    private store: Store<{ items: ItemsState }>,
+    private tooltipService: TooltipService
+  ) {
     this.items$ = this.store.pipe(select(ItemsSelectors.selectAllItems));
     this.totalRecords$ = this.store.pipe(select(ItemsSelectors.selectTotalItems));
     this.loading$ = this.store.pipe(select(ItemsSelectors.selectLoading));
@@ -126,15 +130,10 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
   }
 
   truncateText(text: string | number | null | undefined): string {
-    const textAsString = String(text ?? '');
-    if (textAsString.length > this.MAX_TEXT_LENGTH) {
-      return textAsString.substring(0, this.MAX_TEXT_LENGTH) + '...';
-    }
-    return textAsString;
+    return this.tooltipService.truncateText(String(text ?? ''), this.MAX_TEXT_LENGTH);
   }
 
   shouldShowTooltip(text: string | number | null | undefined): boolean {
-    const textAsString = String(text ?? '');
-    return textAsString.length > this.MAX_TEXT_LENGTH;
+    return this.tooltipService.shouldShowTooltip(String(text ?? ''), this.MAX_TEXT_LENGTH);
   }
 }
