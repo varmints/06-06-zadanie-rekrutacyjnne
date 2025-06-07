@@ -1,20 +1,21 @@
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core'; // Added OnDestroy
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TableModule, TableLazyLoadEvent, Table } from 'primeng/table'; // Added Table
+import { TableModule, TableLazyLoadEvent, Table } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
-import { MessageService } from 'primeng/api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { Item } from '../../models/item.model';
-import { ItemsService } from '../../services/items.service';
-import { GetItemsResponse } from '../../models/get-items-response.model';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { Subject, Observable } from 'rxjs'; // Removed unused Subscription
+import { debounceTime, takeUntil, distinctUntilChanged } from 'rxjs/operators';
+import { Store, select } from '@ngrx/store';
+import { ItemsState } from '../../store/items/items.state';
+import * as ItemsActions from '../../store/items/items.actions';
+import * as ItemsSelectors from '../../store/items/items.selectors';
 
 interface Column {
   field: string;
@@ -40,26 +41,26 @@ interface Column {
   styleUrls: ['./items-table.component.css'],
 })
 export class ItemsTableComponent implements OnInit, OnDestroy {
-  // Implemented OnDestroy
-  @ViewChild('dt') dt!: Table; // Added ViewChild reference to the table
+  @ViewChild('dt') dt!: Table;
 
-  items: Item[] = [];
+  items$: Observable<Item[]>;
+  totalRecords$: Observable<number>;
+  loading$: Observable<boolean>;
+  searchTerm$: Observable<string>;
+
   cols: Column[] = [];
-  totalRecords: number = 0;
-  loading: boolean = true; // Changed to true
-  rows: number = 10; // Default rows per page
-  searchTerm: string = '';
+  rows: number = 10;
 
-  private readonly MAX_TEXT_LENGTH = 20; // Maximum characters to display in a cell
+  private readonly MAX_TEXT_LENGTH = 20;
   private searchSubject = new Subject<string>();
-  private searchSubscription!: Subscription;
-  private readonly LOCAL_STORAGE_ROWS_KEY = 'itemsTableRowsPerPage'; // Added for local storage
+  private destroy$ = new Subject<void>();
+  private readonly LOCAL_STORAGE_ROWS_KEY = 'itemsTableRowsPerPage';
 
-  constructor(
-    private itemsService: ItemsService,
-    private messageService: MessageService // Injected MessageService
-  ) {
-    this.items = Array(this.rows).fill({}); // Force skeleton rows on first load
+  constructor(private store: Store<{ items: ItemsState }>) {
+    this.items$ = this.store.pipe(select(ItemsSelectors.selectAllItems));
+    this.totalRecords$ = this.store.pipe(select(ItemsSelectors.selectTotalItems));
+    this.loading$ = this.store.pipe(select(ItemsSelectors.selectLoading));
+    this.searchTerm$ = this.store.pipe(select(ItemsSelectors.selectSearchTerm));
   }
 
   ngOnInit(): void {
@@ -68,6 +69,7 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
       const parsedRows = parseInt(storedRows, 10);
       if (!isNaN(parsedRows) && parsedRows > 0) {
         this.rows = parsedRows;
+        this.store.dispatch(ItemsActions.updatePagination({ page: 0, pageSize: this.rows }));
       }
     }
 
@@ -77,100 +79,52 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
       { field: 'category', header: 'Category' },
       { field: 'date', header: 'Date' },
     ];
-    this.loadItems({
-      first: 0,
-      rows: this.rows, // Use the initialized this.rows
-      sortField: this.getCurrentSortField(),
-      sortOrder: this.getCurrentSortOrder(),
+
+    this.store.dispatch(ItemsActions.loadItems({ pageSize: this.rows, page: 0 }));
+
+    this.searchSubject.pipe(debounceTime(500), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe((term) => {
+      this.store.dispatch(ItemsActions.updateSearchTerm({ searchTerm: term }));
     });
 
-    this.searchSubscription = this.searchSubject
-      .pipe(debounceTime(500)) // Debounce for 500ms
-      .subscribe(() => {
-        const lazyLoadEvent: TableLazyLoadEvent = {
-          first: 0, // Reset to first page
-          rows: this.dt ? this.dt.rows : this.rows,
-          sortField: this.dt?.sortField ?? this.getCurrentSortField(),
-          sortOrder: this.dt?.sortOrder ?? this.getCurrentSortOrder(),
-        };
-        this.loadItems(lazyLoadEvent);
-      });
+    this.store.pipe(select(ItemsSelectors.selectPagination), takeUntil(this.destroy$)).subscribe((pagination) => {
+      if (pagination && pagination.pageSize !== this.rows) {
+        this.rows = pagination.pageSize;
+      }
+    });
   }
 
   ngOnDestroy(): void {
-    if (this.searchSubscription) {
-      this.searchSubscription.unsubscribe();
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadItems(event: TableLazyLoadEvent): void {
-    this.loading = true;
-
-    // If event.rows is provided (e.g., from paginator change),
-    // update this.rows and save to localStorage.
-    if (typeof event.rows === 'number' && event.rows > 0) {
-      this.rows = event.rows;
-      localStorage.setItem(this.LOCAL_STORAGE_ROWS_KEY, this.rows.toString());
-    }
-    // this.rows now holds the correct value (from event, or from previous state/localStorage)
-
-    const page = event.first !== undefined && this.rows > 0 ? event.first / this.rows : 0;
-    const pageSize = this.rows; // pageSize is now consistently this.rows
-
-    this.items = Array(pageSize).fill({}); // Force skeleton rows while loading
-    const sortField = (event.sortField as string) || 'id';
+    const eventRows = event.rows ?? this.rows;
+    const page = event.first !== undefined && eventRows > 0 ? event.first / eventRows : 0;
+    const pageSize = eventRows;
+    const sortField = (event.sortField as string) || this.getCurrentSortField();
     const sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
 
-    this.itemsService
-      .getItems({
-        page: page + 1, // API is 1-based
-        pageSize,
-        sortField,
-        sortOrder,
-        search: this.searchTerm,
-      })
-      .subscribe({
-        next: (response: GetItemsResponse) => {
-          this.items = response.data;
-          this.totalRecords = response.total;
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Error fetching items:', error);
-          this.items = []; // Clear items on error
-          this.totalRecords = 0;
-          this.loading = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error Loading Data',
-            detail: 'Could not load items. Please try again later.',
-            life: 3000,
-          });
-        },
-      });
+    this.store.dispatch(ItemsActions.updatePagination({ page, pageSize }));
+    this.store.dispatch(ItemsActions.updateSort({ sortField, sortOrder }));
   }
 
   onSearch(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
-    this.searchTerm = inputElement.value;
-    this.searchSubject.next(this.searchTerm); // Use subject to trigger search
+    const term = inputElement.value;
+    this.searchSubject.next(term);
   }
 
   clearSearch(): void {
-    this.searchTerm = '';
-    this.searchSubject.next(''); // Trigger debounced search with empty term
+    this.searchSubject.next('');
   }
 
   private getCurrentSortField(): string {
     return this.cols.length > 0 ? this.cols[0].field : 'id';
   }
 
-  private getCurrentSortOrder(): 1 | -1 | 0 | undefined {
-    return 1; // Default to ascending
-  }
-
   truncateText(text: string | number | null | undefined): string {
-    const textAsString = String(text ?? ''); // Convert to string, handling null/undefined
+    const textAsString = String(text ?? '');
     if (textAsString.length > this.MAX_TEXT_LENGTH) {
       return textAsString.substring(0, this.MAX_TEXT_LENGTH) + '...';
     }
@@ -178,7 +132,7 @@ export class ItemsTableComponent implements OnInit, OnDestroy {
   }
 
   shouldShowTooltip(text: string | number | null | undefined): boolean {
-    const textAsString = String(text ?? ''); // Convert to string, handling null/undefined
+    const textAsString = String(text ?? '');
     return textAsString.length > this.MAX_TEXT_LENGTH;
   }
 }

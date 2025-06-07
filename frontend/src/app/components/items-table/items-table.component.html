@@ -1,14 +1,14 @@
 <p-card>
   <p-table
     #dt
-    [value]="items"
+    [value]="(items$ | async) ?? []"
     [columns]="cols"
     [lazy]="true"
     (onLazyLoad)="loadItems($event)"
     [paginator]="true"
     [rows]="rows"
-    [totalRecords]="totalRecords"
-    [loading]="loading"
+    [totalRecords]="(totalRecords$ | async) ?? 0"
+    [loading]="loading$ | async"
     [rowsPerPageOptions]="[5, 10, 20]"
     dataKey="id"
     responsiveLayout="scroll"
@@ -20,7 +20,13 @@
         <div class="flex items-center gap-2">
           <p-iconfield>
             <p-inputicon styleClass="pi pi-search" />
-            <input pInputText type="text" (input)="onSearch($event)" placeholder="Search..." [(ngModel)]="searchTerm" />
+            <input
+              pInputText
+              type="text"
+              [ngModel]="searchTerm$ | async"
+              (input)="onSearch($event)"
+              placeholder="Search..."
+            />
           </p-iconfield>
           <p-button icon="pi pi-times" label="Clear" (click)="clearSearch()" severity="danger" />
         </div>
@@ -37,7 +43,7 @@
     <ng-template pTemplate="body" let-rowData let-columns="columns">
       <tr>
         <td *ngFor="let col of columns">
-          <ng-container *ngIf="loading; else dataCell">
+          <ng-container *ngIf="loading$ | async; else dataCell">
             <p-skeleton height="1.5rem"></p-skeleton>
           </ng-container>
           <ng-template #dataCell>
