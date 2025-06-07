@@ -4,6 +4,7 @@ import { ButtonModule } from 'primeng/button';
 import { ItemsTableComponent } from './components/items-table/items-table.component';
 import { MenuModule } from 'primeng/menu'; // Import MenuModule
 import { MenuItem } from 'primeng/api'; // Import MenuItem
+import { ToastModule } from 'primeng/toast'; // Import ToastModule
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,7 @@ import { MenuItem } from 'primeng/api'; // Import MenuItem
     ButtonModule,
     ItemsTableComponent,
     MenuModule, // Add MenuModule to imports
+    ToastModule, // Add ToastModule to imports
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
