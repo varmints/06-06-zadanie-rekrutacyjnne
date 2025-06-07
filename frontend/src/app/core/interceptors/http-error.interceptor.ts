@@ -11,17 +11,17 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        let errorMessage = 'Wystąpił nieznany błąd serwera.';
+        let errorMessage = 'An unknown server error occurred.';
         if (error.error instanceof ErrorEvent) {
-          // Błąd po stronie klienta lub sieci
-          errorMessage = `Błąd: ${error.error.message}`;
+          // Client-side or network error
+          errorMessage = `Error: ${error.error.message}`;
         } else {
-          // Błąd odpowiedzi serwera
-          errorMessage = `Błąd serwera (status: ${error.status}): ${error.message}`;
+          // Server response error
+          errorMessage = `Server error (status: ${error.status}): ${error.message}`;
         }
         this.messageService.add({
           severity: 'error',
-          summary: 'Błąd API',
+          summary: 'API Error',
           detail: errorMessage,
           life: 5000,
         });
